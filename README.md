@@ -13,7 +13,7 @@ Once finished, a B/W mask is saved as `png`, along with vertex coordinates in th
 
 ### How to use it
 
-* Run with `python ./fow_finder.py`) or IDE;
+* Run with `python ./fow_finder.py` or IDE;
 * With keyboard `left` and `right` you select the vertex you want to move (enlightened in red);
 * Increase or decreare distance from center with `up` and `down` keys;
 * Press `Esc` o `q` to finish.
@@ -22,5 +22,5 @@ Once finished, a B/W mask is saved as `png`, along with vertex coordinates in th
 ### What you need to run it?
 
 * Python2.x (3.x should work as well) 
-* Psychopy
+* Psychopy ([link](http://www.psychopy.org/))
 * a Keyboard :D
