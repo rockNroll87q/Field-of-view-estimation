@@ -7,7 +7,7 @@ In the case you do an MRI experiment and you want to quickly estimate the field 
 ### What it does? 
 
 It draws a polygon (a "circle" to begin) that you can easily modify moving every vertex, far or near the centre.
-Before an experiment it should not take so much time to draw your field of view (take a look at `demo.mp4).
+Before an experiment it should not take so much time to draw your field of view (take a look at `demo.mp4`).
  
 Once finished, a B/W mask is saved as `png`, along with vertex coordinates in the `log` file.
 
