@@ -11,6 +11,9 @@ Before an experiment it should not take so much time to draw your field of view 
  
 Once finished, a B/W mask is saved as `png`, along with vertex coordinates in the `log` file.
 
+The code allows you to change easily the number of verteces (`Points_polygon = 10`) and the intial position (`Radius_polygon = 0.9`).
+
+
 ### How to use it
 
 * Run with `python ./fow_finder.py` or IDE;
