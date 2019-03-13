@@ -13,6 +13,7 @@ Once finished, a B/W mask is saved as `png`, along with vertex coordinates in th
 
 The code allows you to change easily the number of verteces (`Points_polygon = 10`) and the intial positions respect to the centre (`Radius_polygon = 0.9`).
 
+See the video for a demo.
 
 ### How to use it
 
