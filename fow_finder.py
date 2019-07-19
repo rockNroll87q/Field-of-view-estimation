@@ -17,11 +17,12 @@ from __future__ import division, print_function
 
 from psychopy import visual, event, core, logging
 from psychopy import prefs as pyschopy_prefs
+import psychopy 
 
 import numpy as np
-import os
+import os, sys
 from datetime import datetime as dt
-from time import gmtime, strftime
+from time import localtime, strftime
 import math
 from PIL import Image
 
@@ -34,9 +35,10 @@ serif = ['Times', 'Times New Roman']
 sans = ['Gill Sans MT', 'Arial', 'Helvetica', 'Verdana']
 
 # Experiment details
-Fullscreen = True   #True-False
+Fullscreen = False   #True-False
 Screen_dimensions = (500,500)            #(1920,1080)
-Dir_save = '../out/'
+#Dir_save = '../out/'
+Dir_save = 'D:/Mucklis_lab/Movie_feedback/out/'
 Log_name = 'LogFile.log'
 Frames_durations_name = 'frames_durations.npy'
 Fps_update_rate = 1                             # sec
@@ -50,6 +52,12 @@ Points_polygon = 10             # They are the double
 ## Functions and Classes
 
 
+def logEveryPackageLoad(log):
+    log.data('%10s : %s' % ('Python', sys.version.split('\n')[0]))
+    log.data('%10s : %s' % ('Numpy', np.__version__))
+    log.data('%10s : %s\n' % ('Psychopy', psychopy.__version__))
+    
+    
 def screenCorrection(mywin,x):
     resX = mywin.size[0]
     resY = mywin.size[1]
@@ -85,7 +93,7 @@ def circleSampling(n, r=1):       # r = radius, n = sampling
     xunit = r * np.cos(th)
     yunit = r * np.sin(th)
     
-    return zip(xunit,yunit)
+    return list(zip(xunit,yunit))
 
 
 def cartesian(r, theta):
@@ -168,16 +176,20 @@ def main(win, globalClock):
                 i_vertex -= 1
             if key in ['left']:
                 i_vertex += 1   
-            if i_vertex<0:
+                
+            if i_vertex < 0:
                 i_vertex += len(polygon_vertices)
-            if i_vertex>=len(polygon_vertices) or i_vertex<=-len(polygon_vertices):
+            if i_vertex >= len(polygon_vertices):# or i_vertex<=-len(polygon_vertices):
                 i_vertex = 0
 
             if key in ['up']:
                 r_vertex *= 1.1
             if key in ['down']:
                 r_vertex /= 1.1
-                
+            
+#            r_vertex = min(0.99,r_vertex)
+            r_vertex = max(.05,r_vertex)
+            
         return i_vertex, r_vertex
 
 
@@ -189,34 +201,47 @@ def main(win, globalClock):
     win.flip()
     event.waitKeys()    #pause until there's a keypress
    
+    all_theta = []
+    for indx, i in enumerate(polygon.vertices):
+        x, y = i
+        r, theta = polar(x, y)
+        all_theta.append(theta)
+    
     starting_time = globalClock.getTime()
     
-    #for i_vertex in polygon_vertices:
-    i_vertex = 0; i_vertex_up = 0
+    i_vertex = 0; i_vertex_up = 0;
     while(1):
-        
+
+        # Retrieve r to modify it (if needed)
         x, y = polygon.vertices[i_vertex]
         r, theta = polar(x, y)
-
+        
         # Keys
         i_vertex_up, r = keyPressCondition(i_vertex, r)
         if np.isnan(i_vertex_up): break
 
-        # Update vertex 'i' 
-        polygon_vertices[i_vertex] = cartesian(r, theta)
+        # Update vertex 'i_vertex_up'
+        x, y = polygon.vertices[i_vertex_up]
+        if i_vertex_up != i_vertex:         # change of vertex in this iteration
+            r, theta = polar(x, y)
+        else:                               # change of r
+            _, theta = polar(x, y)
+
+        polygon_vertices[i_vertex_up] = cartesian(r, theta)#all_theta[i_vertex_up])
+
         polygon.vertices = polygon_vertices
         polygon.draw()
 
         # Update circles and indeces
         for i,x_circles in enumerate(all_circles):
-            if i != i_vertex:
+            if i != i_vertex_up:
                 x_circles.fillColor = 'green'
             else:
                 x_circles.fillColor = 'red'
                 x_circles.pos = cartesian(r, theta)
                 all_labels[i].pos = cartesian(r-0.05, theta)
+
             x_circles.draw()
-            
             all_labels[i].draw()
 
         # Update screen                
@@ -237,6 +262,7 @@ def main(win, globalClock):
     
     logging.data('** Vertices obtained: **\n\n')
     logging.data(polygon_vertices)
+    print(polygon_vertices  )
     logging.data('\n\n\n')
     logging.data('Total time spent: %.6f' % (globalClock.getTime() - starting_time))
     logging.data('Every frame duration saved in %s' % (path_out+Frames_durations_name))
@@ -253,7 +279,7 @@ if __name__ == "__main__":
     today_date = dt.today().strftime('%Y-%m-%d')        # Date (mm/dd/yy)
     operator = 'MS'                                     # Operator
     DEBUG_MODE = False                                  # Debug mode
-    subject_code = 'test'                              # Subject-code
+    subject_code = 'test'                               # Subject-code
     subject_age = 99                                    # Age
     subject_gender = 'female'                           # Gender
 
@@ -269,7 +295,8 @@ if __name__ == "__main__":
     logging.setDefaultClock(globalClock)
     logging.console.setLevel(logging.WARNING)
     lastLog=logging.LogFile(path_out+Log_name,level=logging.DATA,filemode='w',encoding='utf8')
-    logging.data("------------- " + strftime("%Y-%m-%d %H:%M:%S", gmtime()) + " -------------")
+    logging.data("------------- " + strftime("%Y-%m-%d %H:%M:%S", localtime()) + " -------------\n")
+    logEveryPackageLoad(logging)
     logging.data(pyschopy_prefs)
     logging.data("Saving in folder: " + path_out)
     logging.data("Operator: " + operator + "\n")    
@@ -277,7 +304,7 @@ if __name__ == "__main__":
     logging.data('***** Starting *****')
 
     # Start window
-    win = visual.Window(Screen_dimensions, monitor="mon", screen=1, units="norm", fullscr=Fullscreen,
+    win = visual.Window(Screen_dimensions, monitor="mon", screen=0, units="norm", fullscr=Fullscreen,
                         allowStencil=True, color='black') # norm
     resX,resY = win.size
     logging.data('Resolution of the screen: %d, %d.' % (resX,resY))
